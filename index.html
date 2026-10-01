@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Advanced Text to PDF Creator</title>
+
+<style>
+*{
+    box-sizing:border-box;
+    margin:0;
+    padding:0;
+}
+
+body{
+    font-family:Arial, sans-serif;
+    background:#f3f4f6;
+    color:#1f2937;
+}
+
+header{
+    background:#111827;
+    color:#fff;
+    text-align:center;
+    padding:22px;
+}
+
+header h1{
+    font-size:28px;
+    margin-bottom:5px;
+}
+
+header p{
+    color:#d1d5db;
+    font-size:14px;
+}
+
+.container{
+    max-width:1000px;
+    margin:30px auto;
+    padding:0 20px;
+}
+
+.card{
+    background:#fff;
+    border-radius:14px;
+    box-shadow:0 5px 25px rgba(0,0,0,.08);
+    overflow:hidden;
+}
+
+/* DOCUMENT TITLE */
+
+.title-area{
+    padding:20px;
+    border-bottom:1px solid #e5e7eb;
+}
+
+.title-area label{
+    display:block;
+    font-weight:600;
+    margin-bottom:8px;
+}
+
+.title-area input{
+    width:100%;
+    padding:12px;
+    border:1px solid #d1d5db;
+    border-radius:7px;
+    font-size:16px;
+}
+
+/* TOOLBAR */
+
+.toolbar{
+    display:flex;
+    flex-wrap:wrap;
+    gap:7px;
+    padding:12px;
+    background:#f9fafb;
+    border-bottom:1px solid #ddd;
+    position:sticky;
+    top:0;
+    z-index:20;
+}
+
+.toolbar button,
+.toolbar select,
+.toolbar input{
+    height:38px;
+    border:1px solid #d1d5db;
+    background:white;
+    border-radius:6px;
+    padding:0 10px;
+    cursor:pointer;
+}
+
+.toolbar button{
+    min-width:38px;
+    font-size:15px;
+}
+
+.toolbar button:hover{
+    background:#e5e7eb;
+}
+
+.toolbar select{
+    min-width:100px;
+}
+
+.toolbar input[type="color"]{
+    width:42px;
+    padding:4px;
+}
+
+/* EDITOR */
+
+.editor-wrapper{
+    background:#e5e7eb;
+    padding:30px;
+}
+
+.paper{
+    width:100%;
+    max-width:794px;
+    min-height:1123px;
+    margin:auto;
+    background:#fff;
+    padding:55px;
+    box-shadow:0 4px 20px rgba(0,0,0,.10);
+}
+
+.document-title{
+    font-size:30px;
+    margin-bottom:25px;
+}
+
+#editor{
+    min-height:850px;
+    outline:none;
+    line-height:1.7;
+    font-size:16px;
+}
+
+#editor:empty:before{
+    content:attr(data-placeholder);
+    color:#9ca3af;
+}
+
+/* STATUS */
+
+.status{
+    display:flex;
+    justify-content:space-between;
+    padding:12px 20px;
+    border-top:1px solid #e5e7eb;
+    font-size:13px;
+    color:#6b7280;
+}
+
+/* ACTIONS */
+
+.actions{
+    display:flex;
+    gap:10px;
+    padding:20px;
+}
+
+.actions button{
+    padding:13px 20px;
+    border:0;
+    border-radius:7px;
+    font-size:15px;
+    font-weight:600;
+    cursor:pointer;
+}
+
+.download{
+    background:#2563eb;
+    color:white;
+    flex:1;
+}
+
+.download:hover{
+    background:#1d4ed8;
+}
+
+.clear{
+    background:#e5e7eb;
+}
+
+/* PRINT */
+
+@media print{
+
+    body{
+        background:white;
+    }
+
+    header,
+    .title-area,
+    .toolbar,
+    .status,
+    .actions{
+        display:none !important;
+    }
+
+    .container{
+        margin:0;
+        padding:0;
+        max-width:none;
+    }
+
+    .card{
+        box-shadow:none;
+    }
+
+    .editor-wrapper{
+        padding:0;
+        background:white;
+    }
+
+    .paper{
+        box-shadow:none;
+        max-width:none;
+        width:100%;
+        min-height:auto;
+        padding:20mm;
+    }
+
+    @page{
+        size:A4;
+        margin:0;
+    }
+}
+
+@media(max-width:700px){
+
+    .container{
+        padding:0 10px;
+    }
+
+    .editor-wrapper{
+        padding:10px;
+    }
+
+    .paper{
+        padding:25px;
+    }
+
+    .toolbar{
+        gap:5px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <h1>Advanced Text to PDF Creator</h1>
+    <p>Select any text and customize it before creating your PDF.</p>
+</header>
+
+<div class="container">
+
+<div class="card">
+
+    <div class="title-area">
+
+        <label>Document Title</label>
+
+        <input
+            type="text"
+            id="titleInput"
+            placeholder="Enter document title"
+        >
+
+    </div>
+
+    <!-- TOOLBAR -->
+
+    <div class="toolbar">
+
+        <!-- Undo -->
+
+        <button onclick="format('undo')" title="Undo">
+            ↶
+        </button>
+
+        <button onclick="format('redo')" title="Redo">
+            ↷
+        </button>
+
+        <!-- Bold -->
+
+        <button onclick="format('bold')" title="Bold">
+            <b>B</b>
+        </button>
+
+        <!-- Italic -->
+
+        <button onclick="format('italic')" title="Italic">
+            <i>I</i>
+        </button>
+
+        <!-- Underline -->
+
+        <button onclick="format('underline')" title="Underline">
+            <u>U</u>
+        </button>
+
+        <!-- Strike -->
+
+        <button onclick="format('strikeThrough')" title="Strike">
+            <s>S</s>
+        </button>
+
+        <!-- Font Family -->
+
+        <select onchange="changeFont(this.value)">
+
+            <option value="">Font</option>
+
+            <option value="Arial">
+                Arial
+            </option>
+
+            <option value="Georgia">
+                Georgia
+            </option>
+
+            <option value="Times New Roman">
+                Times New Roman
+            </option>
+
+            <option value="Verdana">
+                Verdana
+            </option>
+
+            <option value="Courier New">
+                Courier New
+            </option>
+
+        </select>
+
+        <!-- Font Size -->
+
+        <select onchange="changeFontSize(this.value)">
+
+            <option value="">
+                Size
+            </option>
+
+            <option value="10">
+                10px
+            </option>
+
+            <option value="12">
+                12px
+            </option>
+
+            <option value="14">
+                14px
+            </option>
+
+            <option value="16">
+                16px
+            </option>
+
+            <option value="18">
+                18px
+            </option>
+
+            <option value="20">
+                20px
+            </option>
+
+            <option value="24">
+                24px
+            </option>
+
+            <option value="28">
+                28px
+            </option>
+
+            <option value="32">
+                32px
+            </option>
+
+            <option value="36">
+                36px
+            </option>
+
+            <option value="48">
+                48px
+            </option>
+
+        </select>
+
+        <!-- Headings -->
+
+        <select onchange="changeBlock(this.value)">
+
+            <option value="">
+                Paragraph
+            </option>
+
+            <option value="p">
+                Normal
+            </option>
+
+            <option value="h1">
+                Heading 1
+            </option>
+
+            <option value="h2">
+                Heading 2
+            </option>
+
+            <option value="h3">
+                Heading 3
+            </option>
+
+        </select>
+
+        <!-- Text Color -->
+
+        <input
+            type="color"
+            onchange="changeColor(this.value)"
+            title="Text Color"
+        >
+
+        <!-- Alignment -->
+
+        <button
+            onclick="format('justifyLeft')"
+            title="Align Left"
+        >
+            ≡
+        </button>
+
+        <button
+            onclick="format('justifyCenter')"
+            title="Align Center"
+        >
+            ≣
+        </button>
+
+        <button
+            onclick="format('justifyRight')"
+            title="Align Right"
+        >
+            ≡
+        </button>
+
+        <button
+            onclick="format('justifyFull')"
+            title="Justify"
+        >
+            ☰
+        </button>
+
+        <!-- Lists -->
+
+        <button
+            onclick="format('insertUnorderedList')"
+            title="Bullet List"
+        >
+            • List
+        </button>
+
+        <button
+            onclick="format('insertOrderedList')"
+            title="Numbered List"
+        >
+            1. List
+        </button>
+
+    </div>
+
+
+    <!-- PAPER -->
+
+    <div class="editor-wrapper">
+
+        <div class="paper" id="pdfArea">
+
+            <h1
+                class="document-title"
+                id="documentTitle"
+            >
+                Your Document Title
+            </h1>
+
+            <div
+                id="editor"
+                contenteditable="true"
+                data-placeholder="Start writing or paste your text here..."
+            ></div>
+
+        </div>
+
+    </div>
+
+
+    <!-- WORD COUNT -->
+
+    <div class="status">
+
+        <span>
+            Select any word, line or paragraph to format it.
+        </span>
+
+        <span>
+            <span id="words">0</span> words |
+            <span id="characters">0</span> characters
+        </span>
+
+    </div>
+
+
+    <!-- BUTTONS -->
+
+    <div class="actions">
+
+        <button
+            class="clear"
+            onclick="clearEditor()"
+        >
+            Clear
+        </button>
+
+        <button
+            class="download"
+            onclick="createPDF()"
+        >
+            Download PDF
+        </button>
+
+    </div>
+
+</div>
+
+</div>
+
+
+<script>
+
+const editor =
+    document.getElementById("editor");
+
+const titleInput =
+    document.getElementById("titleInput");
+
+const documentTitle =
+    document.getElementById("documentTitle");
+
+
+/* BASIC FORMATTING */
+
+function format(command){
+
+    editor.focus();
+
+    document.execCommand(
+        command,
+        false,
+        null
+    );
+
+}
+
+
+/* FONT */
+
+function changeFont(font){
+
+    if(!font) return;
+
+    editor.focus();
+
+    document.execCommand(
+        "fontName",
+        false,
+        font
+    );
+
+}
+
+
+/* FONT SIZE */
+
+function changeFontSize(size){
+
+    if(!size) return;
+
+    editor.focus();
+
+    /*
+    execCommand only supports sizes 1-7,
+    so first create font tags.
+    */
+
+    document.execCommand(
+        "fontSize",
+        false,
+        "7"
+    );
+
+    /*
+    Convert selected generated font tags
+    into exact pixel sizes.
+    */
+
+    const fonts =
+        editor.querySelectorAll(
+            'font[size="7"]'
+        );
+
+    fonts.forEach(function(font){
+
+        font.removeAttribute("size");
+
+        font.style.fontSize =
+            size + "px";
+
+    });
+
+}
+
+
+/* TEXT COLOR */
+
+function changeColor(color){
+
+    editor.focus();
+
+    document.execCommand(
+        "foreColor",
+        false,
+        color
+    );
+
+}
+
+
+/* HEADINGS */
+
+function changeBlock(tag){
+
+    if(!tag) return;
+
+    editor.focus();
+
+    document.execCommand(
+        "formatBlock",
+        false,
+        tag
+    );
+
+}
+
+
+/* TITLE */
+
+titleInput.addEventListener(
+    "input",
+    function(){
+
+        documentTitle.textContent =
+            titleInput.value.trim()
+            || "Your Document Title";
+
+    }
+);
+
+
+/* WORD COUNTER */
+
+editor.addEventListener(
+    "input",
+    updateCounter
+);
+
+function updateCounter(){
+
+    const text =
+        editor.innerText.trim();
+
+    document.getElementById(
+        "characters"
+    ).textContent =
+        editor.innerText.length;
+
+    const count =
+        text
+        ? text.split(/\s+/).length
+        : 0;
+
+    document.getElementById(
+        "words"
+    ).textContent =
+        count;
+
+}
+
+
+/* CLEAR */
+
+function clearEditor(){
+
+    const answer =
+        confirm(
+            "Clear the complete document?"
+        );
+
+    if(!answer){
+        return;
+    }
+
+    editor.innerHTML = "";
+
+    titleInput.value = "";
+
+    documentTitle.textContent =
+        "Your Document Title";
+
+    updateCounter();
+
+}
+
+
+/* PDF */
+
+function createPDF(){
+
+    if(!editor.innerText.trim()){
+
+        alert(
+            "Please enter some content first."
+        );
+
+        return;
+
+    }
+
+    window.print();
+
+}
+
+</script>
+
+</body>
+</html>
